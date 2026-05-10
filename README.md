@@ -34,11 +34,15 @@ El juego estará disponible en: `https://[tu-usuario].github.io/memoria-parejas/
 
 ```
 memoria-parejas/
-├── index.html      # Estructura HTML principal
-├── styles.css      # Estilos CSS
-├── script.js       # Lógica del juego en JavaScript
-├── memo.html       # Archivo original (para referencia)
-└── README.md       # Este archivo
+├── index.html           # Estructura HTML principal
+├── memo.html            # Archivo original (para referencia)
+├── README.md            # Este archivo
+├── .nojekyll           # Para compatibilidad con GitHub Pages
+└── assets/
+    ├── css/
+    │   └── styles.css  # Estilos CSS organizados
+    └── js/
+        └── script.js   # Lógica del juego en JavaScript
 ```
 
 ## 🛠️ Tecnologías Utilizadas
