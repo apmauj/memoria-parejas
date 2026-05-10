@@ -431,14 +431,11 @@ function onCardClick(cardId) {
     updateHUD();
 
     const [c1, c2] = state.flippedCards;
-    console.log('Comparando cartas:', c1.value, c2.value, 'pairId:', c1.pairId, c2.pairId);
 
     if (c1.pairId === c2.pairId && c1.id !== c2.id) {
-      console.log('MATCH!');
       // ¡Coincidencia!
       handleMatch(c1, c2);
     } else {
-      console.log('MISMATCH!');
       // No coincide
       handleMismatch(c1, c2);
     }
@@ -446,7 +443,6 @@ function onCardClick(cardId) {
 }
 
 function handleMatch(c1, c2) {
-  console.log('Ejecutando handleMatch');
   // Marcar cartas como matched
   c1.matched = true;
   c2.matched = true;
@@ -475,7 +471,6 @@ function handleMatch(c1, c2) {
 
   // Resetear estado después de un delay consistente
   setTimeout(() => {
-    console.log('Reseteando estado después de match');
     state.flippedCards = [];
     state.locked = false;
     lockAllCards(false);
@@ -488,7 +483,6 @@ function handleMatch(c1, c2) {
 }
 
 function handleMismatch(c1, c2) {
-  console.log('Ejecutando handleMismatch');
   // Penalización
   state.errors++;
   state.streak = 0;
@@ -506,7 +500,6 @@ function handleMismatch(c1, c2) {
 
   // Resetear cartas después de un delay consistente
   setTimeout(() => {
-    console.log('Reseteando cartas después de mismatch');
     // Resetear solo las cartas que no coinciden
     c1.revealed = false;
     c2.revealed = false;
