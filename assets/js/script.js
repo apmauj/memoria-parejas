@@ -710,21 +710,27 @@ function generateQR() {
   const canvas = document.getElementById('qr-canvas');
   const ctx = canvas.getContext('2d');
 
+  // Establecer tamaño del canvas
+  const canvasSize = 200;
+  canvas.width = canvasSize;
+  canvas.height = canvasSize;
+
   // Crear código QR con qrcode-generator
   const qr = qrcode(0, 'M'); // 0 = auto-detect, 'M' = medium error correction
   qr.addData(url);
   qr.make();
 
-  // Calcular tamaño del módulo
+  // Calcular tamaño del módulo para ocupar todo el espacio
   const size = qr.getModuleCount();
-  const cellSize = Math.floor(200 / size); // 200px canvas
-  const margin = Math.floor((200 - size * cellSize) / 2);
+  const cellSize = Math.floor(canvasSize / size);
+  const totalQRSize = size * cellSize;
+  const margin = Math.floor((canvasSize - totalQRSize) / 2);
 
-  // Limpiar canvas
+  // Limpiar canvas con color de fondo
   ctx.fillStyle = '#FEF6E8'; // colorLight
-  ctx.fillRect(0, 0, 200, 200);
+  ctx.fillRect(0, 0, canvasSize, canvasSize);
 
-  // Dibujar módulos
+  // Dibujar módulos del QR
   ctx.fillStyle = '#3D2C1E'; // colorDark
   for (let row = 0; row < size; row++) {
     for (let col = 0; col < size; col++) {
