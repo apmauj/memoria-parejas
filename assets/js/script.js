@@ -825,6 +825,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // QR
   document.getElementById('btn-share-qr').addEventListener('click', openQRModal);
+  document.getElementById('qr-float-btn').addEventListener('click', openQRModal);
   document.getElementById('btn-close-qr').addEventListener('click', () => {
     document.getElementById('qr-modal').classList.remove('show');
   });

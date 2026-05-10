@@ -648,3 +648,42 @@ body {
 @media (min-height: 800px) {
   #board-wrapper { padding: 16px; }
 }
+
+/* ====== BOTÓN FLOTANTE QR ====== */
+#qr-float-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 56px;
+  height: 56px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(255,107,53,0.3);
+  font-size: 1.2rem;
+  z-index: 1000;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+#qr-float-btn:hover {
+  background: var(--accent-hover);
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(255,107,53,0.4);
+}
+#qr-float-btn:active {
+  transform: scale(0.95);
+}
+@media (max-width: 600px) {
+  #qr-float-btn {
+    bottom: 16px;
+    right: 16px;
+    width: 50px;
+    height: 50px;
+    font-size: 1.1rem;
+  }
+}
