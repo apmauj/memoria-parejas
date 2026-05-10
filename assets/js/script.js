@@ -503,8 +503,13 @@ function getCardElement(id) {
 
 function lockAllCards(locked) {
   document.querySelectorAll('.card').forEach(c => {
-    if (locked) c.classList.add('locked');
-    else c.classList.remove('locked');
+    const cardId = parseInt(c.dataset.id);
+    const card = state.cards[cardId];
+    // No bloquear/desbloquear cartas que ya están matched
+    if (card && !card.matched) {
+      if (locked) c.classList.add('locked');
+      else c.classList.remove('locked');
+    }
   });
 }
 
@@ -703,15 +708,33 @@ function renderRanking() {
 function generateQR() {
   const url = window.location.href;
   const canvas = document.getElementById('qr-canvas');
-  QRCode.toCanvas(canvas, url, {
-    width: 200,
-    height: 200,
-    colorDark: '#3D2C1E',
-    colorLight: '#FEF6E8',
-    correctLevel: QRCode.CorrectLevel.M
-  }, function (error) {
-    if (error) console.error(error);
-  });
+  const ctx = canvas.getContext('2d');
+
+  // Crear código QR con qrcode-generator
+  const qr = qrcode(0, 'M'); // 0 = auto-detect, 'M' = medium error correction
+  qr.addData(url);
+  qr.make();
+
+  // Calcular tamaño del módulo
+  const size = qr.getModuleCount();
+  const cellSize = Math.floor(200 / size); // 200px canvas
+  const margin = Math.floor((200 - size * cellSize) / 2);
+
+  // Limpiar canvas
+  ctx.fillStyle = '#FEF6E8'; // colorLight
+  ctx.fillRect(0, 0, 200, 200);
+
+  // Dibujar módulos
+  ctx.fillStyle = '#3D2C1E'; // colorDark
+  for (let row = 0; row < size; row++) {
+    for (let col = 0; col < size; col++) {
+      if (qr.isDark(row, col)) {
+        const x = margin + col * cellSize;
+        const y = margin + row * cellSize;
+        ctx.fillRect(x, y, cellSize, cellSize);
+      }
+    }
+  }
 }
 
 function openQRModal() {
