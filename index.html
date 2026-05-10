@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>ENCONTRÁ LA PAREJA</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- Fondo animado -->
+<div id="bg-shapes"></div>
+
+<!-- Contenedor de toasts -->
+<div id="toast-container"></div>
+
+<!-- ====== PANTALLA INICIO ====== -->
+<div id="screen-start" class="screen active">
+  <div class="container">
+    <h1 class="game-title">ENCONTRÁ LA PAREJA</h1>
+    <p class="game-subtitle">Memorizá, asociá y aprendé jugando</p>
+
+    <div class="form-group">
+      <label class="form-label" for="player-name">TU NOMBRE</label>
+      <input class="form-input" type="text" id="player-name" placeholder="ESCRIBÍ TU NOMBRE" maxlength="20" autocomplete="off">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">CARGÁ IMÁGENES</label>
+      <div class="drop-zone" id="drop-zone">
+        <i class="fas fa-cloud-arrow-up"></i>
+        <p>ARRASTRÁ IMÁGENES ACÁ</p>
+        <p class="small">JPG, PNG O WEBP — O HACÉ CLICK</p>
+        <input type="file" id="file-input" multiple accept=".jpg,.jpeg,.png,.webp" hidden>
+      </div>
+      <div id="preview-grid" class="preview-grid"></div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">DIFICULTAD</label>
+      <div class="diff-buttons">
+        <button class="diff-btn active" data-diff="easy">FÁCIL<small>4 PAREJAS</small></button>
+        <button class="diff-btn" data-diff="medium">MEDIA<small>6 PAREJAS</small></button>
+        <button class="diff-btn" data-diff="hard">DIFÍCIL<small>8 PAREJAS</small></button>
+      </div>
+    </div>
+
+    <div class="btn-group">
+      <button class="btn-primary" id="btn-start-custom">
+        <i class="fas fa-images"></i>&nbsp; JUGAR CON MIS IMÁGENES
+      </button>
+      <div class="or-divider">O</div>
+      <button class="btn-secondary" id="btn-start-default">
+        <i class="fas fa-face-smile"></i>&nbsp; JUGAR CON EMOJIS
+      </button>
+    </div>
+
+    <div style="text-align:center;">
+      <button class="link-btn" id="btn-show-ranking"><i class="fas fa-trophy"></i>&nbsp; VER RANKING</button>
+    </div>
+  </div>
+</div>
+
+<!-- ====== PANTALLA JUEGO ====== -->
+<div id="screen-game" class="screen">
+  <div id="hud">
+    <div class="hud-item"><i class="fas fa-user" style="color:var(--accent)"></i> <span class="hud-val" id="hud-name">—</span></div>
+    <div class="hud-item"><i class="fas fa-star" style="color:var(--gold)"></i> <span class="hud-val" id="hud-score">0</span></div>
+    <div class="hud-item pairs"><i class="fas fa-puzzle-piece" style="color:var(--accent2)"></i> <span class="hud-val" id="hud-pairs">0/0</span></div>
+    <div class="hud-item"><i class="fas fa-hand-pointer" style="color:var(--fg-light)"></i> <span class="hud-val" id="hud-attempts">0</span></div>
+    <div class="hud-item"><i class="fas fa-circle-xmark" style="color:var(--error)"></i> <span class="hud-val" id="hud-errors">0</span></div>
+    <div class="hud-item"><i class="fas fa-clock" style="color:var(--fg-light)"></i> <span class="hud-val" id="hud-time">0:00</span></div>
+    <div class="hud-item streak"><i class="fas fa-fire" style="color:var(--error)"></i> <span class="hud-val" id="hud-streak">0</span></div>
+  </div>
+  <div id="board-wrapper">
+    <div id="board"></div>
+  </div>
+</div>
+
+<!-- ====== PANTALLA FIN ====== -->
+<div id="screen-end" class="screen">
+  <div class="container end-container">
+    <h2 class="end-title" id="end-title">¡TERMINASTE!</h2>
+    <div class="end-stars" id="end-stars">
+      <i class="fas fa-star"></i>
+      <i class="fas fa-star"></i>
+      <i class="fas fa-star"></i>
+    </div>
+    <div class="end-score" id="end-score">0</div>
+    <div class="end-score-label">PUNTOS</div>
+    <div class="end-stats">
+      <div class="end-stat"><div class="end-stat-val" id="end-time">0:00</div><div class="end-stat-label">TIEMPO</div></div>
+      <div class="end-stat"><div class="end-stat-val" id="end-attempts">0</div><div class="end-stat-label">INTENTOS</div></div>
+      <div class="end-stat"><div class="end-stat-val" id="end-errors">0</div><div class="end-stat-label">ERRORES</div></div>
+    </div>
+    <div class="end-message" id="end-message">¡SEGUÍ PRACTICANDO!</div>
+    <div class="btn-group">
+      <button class="btn-primary" id="btn-play-again"><i class="fas fa-redo"></i>&nbsp; JUGAR DE NUEVO</button>
+      <button class="btn-secondary btn-small" id="btn-go-home"><i class="fas fa-house"></i>&nbsp; INICIO</button>
+      <button class="link-btn" id="btn-show-ranking-end"><i class="fas fa-trophy"></i>&nbsp; VER RANKING</button>
+      <button class="link-btn" id="btn-share-qr"><i class="fas fa-qrcode"></i>&nbsp; COMPARTIR QR</button>
+    </div>
+  </div>
+</div>
+
+<!-- ====== OVERLAY SILABAS ====== -->
+<div id="syllable-overlay">
+  <div class="syllable-box">
+    <div class="syllable-word" id="syl-word"></div>
+    <div class="syllable-syllables" id="syl-syllables"></div>
+  </div>
+</div>
+
+<!-- ====== MODAL RANKING ====== -->
+<div class="modal-overlay" id="ranking-modal">
+  <div class="modal">
+    <h3 class="modal-title"><i class="fas fa-trophy"></i>&nbsp; RANKING</h3>
+    <ul class="ranking-list" id="ranking-list"></ul>
+    <button class="modal-close" id="btn-close-ranking">CERRAR</button>
+  </div>
+</div>
+
+<!-- ====== MODAL QR ====== -->
+<div class="modal-overlay" id="qr-modal">
+  <div class="modal">
+    <h3 class="modal-title"><i class="fas fa-qrcode"></i>&nbsp; COMPARTIR JUEGO</h3>
+    <div style="text-align: center; padding: 20px;">
+      <canvas id="qr-canvas"></canvas>
+      <p style="margin-top: 16px; color: var(--fg-light); font-size: 0.9rem;">ESCANEÁ EL QR PARA JUGAR</p>
+    </div>
+    <button class="modal-close" id="btn-close-qr">CERRAR</button>
+  </div>
+</div>
+
+<!-- Botón Mute -->
+<button id="btn-mute" aria-label="Silenciar"><i class="fas fa-volume-high"></i></button>
+
+<!-- Canvas Confetti -->
+<canvas id="confetti-canvas"></canvas>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
