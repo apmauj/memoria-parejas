@@ -115,6 +115,42 @@ body {
 }
 .form-input::placeholder { color: #C4B5A4; font-weight: 400; }
 
+/* Selector personalizado */
+.custom-pairs-selector {
+  margin-top: 12px;
+  padding: 12px;
+  background: rgba(255,255,255,0.6);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--card-border);
+  text-align: center;
+}
+.form-label-small {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--fg-light);
+  margin-bottom: 6px;
+  letter-spacing: 0.05em;
+}
+.form-input-small {
+  width: 100%;
+  max-width: 120px;
+  padding: 8px 12px;
+  border: 2px solid var(--card-border);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--fg);
+  background: var(--card-bg);
+  text-align: center;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.form-input-small:focus {
+  border-color: var(--accent);
+}
+
 /* ====== ZONA DE CARGA ====== */
 .drop-zone {
   border: 3px dashed var(--card-border);
@@ -283,14 +319,16 @@ body {
 }
 #board {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
+  gap: 8px;
   width: 100%;
-  max-width: 520px;
+  max-width: 600px;
   padding: 16px;
   background: rgba(255,255,255,0.4);
   border-radius: var(--radius);
   backdrop-filter: blur(5px);
+  /* Layout dinámico - se configura desde JS */
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(auto-fit, 1fr);
 }
 
 /* ====== CARTAS ====== */
@@ -351,13 +389,18 @@ body {
   border-radius: 6px;
 }
 .card-front .card-text {
-  font-size: clamp(0.85rem, 2.5vw, 1.3rem);
+  font-size: clamp(0.75rem, 2.2vw, 1.1rem);
   font-weight: 700;
   color: var(--fg);
   text-align: center;
   word-break: break-word;
-  line-height: 1.2;
+  line-height: 1.1;
   padding: 4px;
+  max-height: 100%;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
 }
 
 /* Efectos de carta */
@@ -650,11 +693,13 @@ body {
   .end-stats { grid-template-columns: repeat(3, 1fr); gap: 6px; }
   .container { padding: 16px 14px; }
   .btn-primary, .btn-secondary { padding: 14px 18px; font-size: 0.95rem; }
+  .diff-buttons { grid-template-columns: repeat(2, 1fr); gap: 8px; }
 }
 @media (max-width: 380px) {
-  #board { gap: 4px; padding: 6px; }
-  .card-front .card-text { font-size: 0.75rem; }
-  .card-back i { font-size: 1.1rem; }
+  #board { gap: 4px; padding: 6px; max-width: 320px; }
+  .card-front .card-text { font-size: 0.7rem; }
+  .card-back i { font-size: 1rem; }
+  .diff-buttons { grid-template-columns: 1fr; }
 }
 @media (min-height: 800px) {
   #board-wrapper { padding: 16px; }

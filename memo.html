@@ -124,6 +124,42 @@
   }
   .form-input::placeholder { color: #C4B5A4; font-weight: 400; }
 
+  /* Selector personalizado */
+  .custom-pairs-selector {
+    margin-top: 12px;
+    padding: 12px;
+    background: rgba(255,255,255,0.6);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--card-border);
+    text-align: center;
+  }
+  .form-label-small {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--fg-light);
+    margin-bottom: 6px;
+    letter-spacing: 0.05em;
+  }
+  .form-input-small {
+    width: 100%;
+    max-width: 120px;
+    padding: 8px 12px;
+    border: 2px solid var(--card-border);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--fg);
+    background: var(--card-bg);
+    text-align: center;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .form-input-small:focus {
+    border-color: var(--accent);
+  }
+
   /* ====== ZONA DE CARGA ====== */
   .drop-zone {
     border: 3px dashed var(--card-border);
@@ -292,14 +328,16 @@
   }
   #board {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
+    gap: 8px;
     width: 100%;
-    max-width: 520px;
+    max-width: 600px;
     padding: 16px;
     background: rgba(255,255,255,0.4);
     border-radius: var(--radius);
     backdrop-filter: blur(5px);
+    /* Layout dinámico - se configura desde JS */
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(auto-fit, 1fr);
   }
 
   /* ====== CARTAS ====== */
@@ -360,13 +398,18 @@
     border-radius: 6px;
   }
   .card-front .card-text {
-    font-size: clamp(0.85rem, 2.5vw, 1.3rem);
+    font-size: clamp(0.75rem, 2.2vw, 1.1rem);
     font-weight: 700;
     color: var(--fg);
     text-align: center;
     word-break: break-word;
-    line-height: 1.2;
+    line-height: 1.1;
     padding: 4px;
+    max-height: 100%;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
   }
 
   /* Efectos de carta */
@@ -648,13 +691,17 @@
     .end-stats { grid-template-columns: repeat(3, 1fr); gap: 6px; }
     .container { padding: 16px 14px; }
     .btn-primary, .btn-secondary { padding: 14px 18px; font-size: 0.95rem; }
+    .diff-buttons { grid-template-columns: repeat(2, 1fr); gap: 8px; }
   }
   @media (max-width: 380px) {
-    #board { gap: 4px; padding: 6px; }
-    .card-front .card-text { font-size: 0.75rem; }
-    .card-back i { font-size: 1.1rem; }
+    #board { gap: 4px; padding: 6px; max-width: 320px; }
+    .card-front .card-text { font-size: 0.7rem; }
+    .card-back i { font-size: 1rem; }
+    .diff-buttons { grid-template-columns: 1fr; }
   }
   @media (min-height: 800px) {
+    #board-wrapper { padding: 16px; }
+  }
     #board-wrapper { padding: 16px; }
   }
 </style>
@@ -692,9 +739,14 @@
     <div class="form-group">
       <label class="form-label">DIFICULTAD</label>
       <div class="diff-buttons">
-        <button class="diff-btn active" data-diff="easy">FÁCIL<small>4 PAREJAS</small></button>
-        <button class="diff-btn" data-diff="medium">MEDIA<small>6 PAREJAS</small></button>
-        <button class="diff-btn" data-diff="hard">DIFÍCIL<small>8 PAREJAS</small></button>
+        <button class="diff-btn active" data-diff="easy">FÁCIL<small>8 PAREJAS</small></button>
+        <button class="diff-btn" data-diff="medium">MEDIA<small>12 PAREJAS</small></button>
+        <button class="diff-btn" data-diff="hard">DIFÍCIL<small>16 PAREJAS</small></button>
+        <button class="diff-btn" data-diff="custom">PERSONALIZADO<small>2-30 PAREJAS</small></button>
+      </div>
+      <div class="custom-pairs-selector" id="custom-pairs-selector" style="display: none;">
+        <label class="form-label-small">CANTIDAD DE PAREJAS</label>
+        <input type="number" id="custom-pairs-input" min="2" max="30" value="8" class="form-input-small">
       </div>
     </div>
 
@@ -783,9 +835,10 @@
    CONFIGURACIÓN Y DATOS POR DEFECTO
    ============================================================ */
 const DIFFICULTY_MAP = {
-  easy:   { pairs: 4, cols: 4, rows: 2 },
-  medium: { pairs: 6, cols: 4, rows: 3 },
-  hard:   { pairs: 8, cols: 4, rows: 4 }
+  easy:   { pairs: 8, cols: 4, rows: 4 },
+  medium: { pairs: 12, cols: 4, rows: 6 },
+  hard:   { pairs: 16, cols: 4, rows: 8 },
+  custom: { pairs: 8, cols: 4, rows: 4 } // Valor por defecto para custom
 };
 
 // Pares por defecto con silabas predefinidas
@@ -1138,11 +1191,51 @@ function generateCards(pairs) {
 }
 
 /* ============================================================
+   UTILIDADES DE LAYOUT
+   ============================================================ */
+function calculateOptimalLayout(totalCards) {
+  // Calcular layout óptimo para mantener proporciones razonables
+  // Priorizar más columnas que filas para mejor UX en móviles
+
+  if (totalCards <= 8) {
+    return { cols: 4, rows: Math.ceil(totalCards / 4) };
+  } else if (totalCards <= 16) {
+    return { cols: 4, rows: Math.ceil(totalCards / 4) };
+  } else if (totalCards <= 24) {
+    return { cols: 6, rows: Math.ceil(totalCards / 6) };
+  } else {
+    return { cols: 8, rows: Math.ceil(totalCards / 8) };
+  }
+}
+
+function formatCardText(text, syllables) {
+  // Si el texto es corto, mostrarlo normal
+  if (text.length <= 8) return text;
+
+  // Si tiene sílabas predefinidas, usarlas
+  if (syllables && syllables !== text) {
+    return syllables;
+  }
+
+  // Para textos largos sin sílabas, intentar separación automática
+  return separateSyllables(text);
+}
+
+/* ============================================================
    RENDERIZAR TABLERO
    ============================================================ */
 function renderBoard() {
   const board = document.getElementById('board');
   board.innerHTML = '';
+
+  // Calcular layout óptimo basado en cantidad de cartas
+  const totalCards = state.cards.length;
+  const { cols, rows } = calculateOptimalLayout(totalCards);
+
+  // Aplicar grid layout dinámico
+  board.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+  board.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+
   state.cards.forEach(card => {
     const div = document.createElement('div');
     div.className = 'card';
@@ -1155,7 +1248,9 @@ function renderBoard() {
     if (card.type === 'image') {
       frontContent = `<img src="${card.imageUrl}" alt="${card.value}" draggable="false">`;
     } else {
-      frontContent = `<span class="card-text">${card.value}</span>`;
+      // Mejorar el manejo de texto largo
+      const displayText = formatCardText(card.value, card.syllables);
+      frontContent = `<span class="card-text">${displayText}</span>`;
     }
 
     div.innerHTML = `
@@ -1496,8 +1591,10 @@ function startGame(useCustom) {
       syllables: separateSyllables(img.name)
     }));
   } else {
+    // Para modo personalizado con emojis, usar la cantidad seleccionada
+    const availablePairs = state.difficulty === 'custom' ? Math.min(diff.pairs, DEFAULT_PAIRS.length) : diff.pairs;
     const shuffled = [...DEFAULT_PAIRS].sort(() => Math.random() - 0.5);
-    pairs = shuffled.slice(0, diff.pairs).map(p => ({
+    pairs = shuffled.slice(0, availablePairs).map(p => ({
       name: p.name,
       imageUrl: emojiImageCache[p.name],
       syllables: p.syllables
@@ -1538,7 +1635,29 @@ document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       state.difficulty = btn.dataset.diff;
+
+      // Mostrar/ocultar selector personalizado
+      const customSelector = document.getElementById('custom-pairs-selector');
+      if (btn.dataset.diff === 'custom') {
+        customSelector.style.display = 'block';
+      } else {
+        customSelector.style.display = 'none';
+      }
     });
+  });
+
+  // Selector personalizado de parejas
+  const customPairsInput = document.getElementById('custom-pairs-input');
+  customPairsInput.addEventListener('input', (e) => {
+    const value = parseInt(e.target.value);
+    if (value >= 2 && value <= 30) {
+      DIFFICULTY_MAP.custom.pairs = value;
+      // Recalcular layout óptimo
+      const totalCards = value * 2; // 2 cartas por pareja
+      const layout = calculateOptimalLayout(totalCards);
+      DIFFICULTY_MAP.custom.cols = layout.cols;
+      DIFFICULTY_MAP.custom.rows = layout.rows;
+    }
   });
 
   // Drop zone

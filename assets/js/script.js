@@ -2,9 +2,10 @@
    CONFIGURACIÓN Y DATOS POR DEFECTO
    ============================================================ */
 const DIFFICULTY_MAP = {
-  easy:   { pairs: 4, cols: 4, rows: 2 },
-  medium: { pairs: 6, cols: 4, rows: 3 },
-  hard:   { pairs: 8, cols: 4, rows: 4 }
+  easy:   { pairs: 8, cols: 4, rows: 4 },
+  medium: { pairs: 12, cols: 4, rows: 6 },
+  hard:   { pairs: 16, cols: 4, rows: 8 },
+  custom: { pairs: 8, cols: 4, rows: 4 } // Valor por defecto para custom
 };
 
 // Pares por defecto con silabas predefinidas
@@ -357,11 +358,47 @@ function generateCards(pairs) {
 }
 
 /* ============================================================
-   RENDERIZAR TABLERO
+   UTILIDADES DE LAYOUT
    ============================================================ */
+function calculateOptimalLayout(totalCards) {
+  // Calcular layout óptimo para mantener proporciones razonables
+  // Priorizar más columnas que filas para mejor UX en móviles
+
+  if (totalCards <= 8) {
+    return { cols: 4, rows: Math.ceil(totalCards / 4) };
+  } else if (totalCards <= 16) {
+    return { cols: 4, rows: Math.ceil(totalCards / 4) };
+  } else if (totalCards <= 24) {
+    return { cols: 6, rows: Math.ceil(totalCards / 6) };
+  } else {
+    return { cols: 8, rows: Math.ceil(totalCards / 8) };
+  }
+}
+
+function formatCardText(text, syllables) {
+  // Si el texto es corto, mostrarlo normal
+  if (text.length <= 8) return text;
+
+  // Si tiene sílabas predefinidas, usarlas
+  if (syllables && syllables !== text) {
+    return syllables;
+  }
+
+  // Para textos largos sin sílabas, intentar separación automática
+  return separateSyllables(text);
+}
 function renderBoard() {
   const board = document.getElementById('board');
   board.innerHTML = '';
+
+  // Calcular layout óptimo basado en cantidad de cartas
+  const totalCards = state.cards.length;
+  const { cols, rows } = calculateOptimalLayout(totalCards);
+
+  // Aplicar grid layout dinámico
+  board.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+  board.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+
   state.cards.forEach(card => {
     const div = document.createElement('div');
     div.className = 'card';
@@ -374,7 +411,9 @@ function renderBoard() {
     if (card.type === 'image') {
       frontContent = `<img src="${card.imageUrl}" alt="${card.value}" draggable="false">`;
     } else {
-      frontContent = `<span class="card-text">${card.value}</span>`;
+      // Mejorar el manejo de texto largo
+      const displayText = formatCardText(card.value, card.syllables);
+      frontContent = `<span class="card-text">${displayText}</span>`;
     }
 
     div.innerHTML = `
@@ -799,8 +838,10 @@ function startGame(useCustom) {
       syllables: separateSyllables(img.name)
     }));
   } else {
+    // Para modo personalizado con emojis, usar la cantidad seleccionada
+    const availablePairs = state.difficulty === 'custom' ? Math.min(diff.pairs, DEFAULT_PAIRS.length) : diff.pairs;
     const shuffled = [...DEFAULT_PAIRS].sort(() => Math.random() - 0.5);
-    pairs = shuffled.slice(0, diff.pairs).map(p => ({
+    pairs = shuffled.slice(0, availablePairs).map(p => ({
       name: p.name,
       imageUrl: emojiImageCache[p.name],
       syllables: p.syllables
@@ -841,7 +882,29 @@ document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       state.difficulty = btn.dataset.diff;
+
+      // Mostrar/ocultar selector personalizado
+      const customSelector = document.getElementById('custom-pairs-selector');
+      if (btn.dataset.diff === 'custom') {
+        customSelector.style.display = 'block';
+      } else {
+        customSelector.style.display = 'none';
+      }
     });
+  });
+
+  // Selector personalizado de parejas
+  const customPairsInput = document.getElementById('custom-pairs-input');
+  customPairsInput.addEventListener('input', (e) => {
+    const value = parseInt(e.target.value);
+    if (value >= 2 && value <= 30) {
+      DIFFICULTY_MAP.custom.pairs = value;
+      // Recalcular layout óptimo
+      const totalCards = value * 2; // 2 cartas por pareja
+      const layout = calculateOptimalLayout(totalCards);
+      DIFFICULTY_MAP.custom.cols = layout.cols;
+      DIFFICULTY_MAP.custom.rows = layout.rows;
+    }
   });
 
   // Drop zone

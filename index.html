@@ -42,9 +42,14 @@
     <div class="form-group">
       <label class="form-label">DIFICULTAD</label>
       <div class="diff-buttons">
-        <button class="diff-btn active" data-diff="easy">FÁCIL<small>4 PAREJAS</small></button>
-        <button class="diff-btn" data-diff="medium">MEDIA<small>6 PAREJAS</small></button>
-        <button class="diff-btn" data-diff="hard">DIFÍCIL<small>8 PAREJAS</small></button>
+        <button class="diff-btn active" data-diff="easy">FÁCIL<small>8 PAREJAS</small></button>
+        <button class="diff-btn" data-diff="medium">MEDIA<small>12 PAREJAS</small></button>
+        <button class="diff-btn" data-diff="hard">DIFÍCIL<small>16 PAREJAS</small></button>
+        <button class="diff-btn" data-diff="custom">PERSONALIZADO<small>2-30 PAREJAS</small></button>
+      </div>
+      <div class="custom-pairs-selector" id="custom-pairs-selector" style="display: none;">
+        <label class="form-label-small">CANTIDAD DE PAREJAS</label>
+        <input type="number" id="custom-pairs-input" min="2" max="30" value="8" class="form-input-small">
       </div>
     </div>
 
