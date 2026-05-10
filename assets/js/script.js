@@ -400,7 +400,8 @@ function onCardClick(cardId) {
   // Verificaciones de seguridad más estrictas
   if (state.locked) return;
 
-  const card = state.cards[cardId];
+  // Buscar la carta por ID, no por índice
+  const card = state.cards.find(c => c.id === cardId);
   if (!card) return;
 
   // Una carta matched nunca debería poder ser clickeada
@@ -422,6 +423,7 @@ function onCardClick(cardId) {
   SFX.flip();
   speakWord(card.value);
 
+  console.log('Empujando carta a flippedCards:', card);
   state.flippedCards.push(card);
 
   if (state.flippedCards.length === 2) {
@@ -515,7 +517,6 @@ function handleMismatch(c1, c2) {
     updateHUD();
   }, 800);
 }
-}
 
 function getCardElement(id) {
   return document.querySelector(`.card[data-id="${id}"]`);
@@ -524,7 +525,7 @@ function getCardElement(id) {
 function lockAllCards(locked) {
   document.querySelectorAll('.card').forEach(c => {
     const cardId = parseInt(c.dataset.id);
-    const card = state.cards[cardId];
+    const card = state.cards.find(card => card.id === cardId);
 
     // Verificación de seguridad: cartas matched nunca deben ser bloqueadas
     if (card && card.matched) {

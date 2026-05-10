@@ -1179,7 +1179,7 @@ function renderBoard() {
    ============================================================ */
 function onCardClick(cardId) {
   if (state.locked) return;
-  const card = state.cards[cardId];
+  const card = state.cards.find(c => c.id === cardId);
   if (!card || card.matched || card.revealed) return;
 
   // Voltear carta
