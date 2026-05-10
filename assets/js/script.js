@@ -452,16 +452,19 @@ function handleMatch(c1, c2) {
 
   SFX.match();
   showSyllableOverlay(c1.value, c1.syllables);
-  updateHUD();
 
-  state.flippedCards = [];
-  state.locked = false;
-  lockAllCards(false);
+  // Resetear estado después del mismo delay que mismatch para consistencia
+  setTimeout(() => {
+    state.flippedCards = [];
+    state.locked = false;
+    lockAllCards(false);
+    updateHUD();
 
-  // Verificar victoria
-  if (state.pairsFound === state.totalPairs) {
-    setTimeout(handleVictory, 1200);
-  }
+    // Verificar victoria
+    if (state.pairsFound === state.totalPairs) {
+      setTimeout(handleVictory, 600);
+    }
+  }, 600);
 }
 
 function handleMismatch(c1, c2) {
@@ -478,6 +481,7 @@ function handleMismatch(c1, c2) {
   SFX.error();
 
   setTimeout(() => {
+    // Resetear cartas que no coinciden
     c1.revealed = false;
     c2.revealed = false;
     el1.classList.remove('flipped', 'error');
@@ -485,6 +489,7 @@ function handleMismatch(c1, c2) {
     el1.setAttribute('aria-label', 'Carta boca abajo');
     el2.setAttribute('aria-label', 'Carta boca abajo');
 
+    // Resetear estado del juego
     state.flippedCards = [];
     state.locked = false;
     lockAllCards(false);
