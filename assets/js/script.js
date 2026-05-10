@@ -397,13 +397,26 @@ function renderBoard() {
    LÓGICA DE JUEGO
    ============================================================ */
 function onCardClick(cardId) {
+  // Verificaciones de seguridad más estrictas
   if (state.locked) return;
+
   const card = state.cards[cardId];
-  if (!card || card.matched || card.revealed) return;
+  if (!card) return;
+
+  // Una carta matched nunca debería poder ser clickeada
+  if (card.matched) return;
+
+  // Una carta ya revelada no debería poder ser clickeada
+  if (card.revealed) return;
+
+  // Verificar que no haya más de 2 cartas flipped
+  if (state.flippedCards.length >= 2) return;
 
   // Voltear carta
   card.revealed = true;
   const el = getCardElement(cardId);
+  if (!el) return;
+
   el.classList.add('flipped');
   el.setAttribute('aria-label', card.value);
   SFX.flip();
@@ -421,67 +434,74 @@ function onCardClick(cardId) {
 
     if (c1.pairId === c2.pairId && c1.id !== c2.id) {
       // ¡Coincidencia!
-      setTimeout(() => handleMatch(c1, c2), 500);
+      handleMatch(c1, c2);
     } else {
       // No coincide
-      setTimeout(() => handleMismatch(c1, c2), 1000);
+      handleMismatch(c1, c2);
     }
   }
 }
 
 function handleMatch(c1, c2) {
+  // Marcar cartas como matched
   c1.matched = true;
   c2.matched = true;
   state.pairsFound++;
   state.streak++;
   if (state.streak > state.bestStreak) state.bestStreak = state.streak;
 
-  // Puntaje: 100 base + 50 si es primer intento de la racha
+  // Calcular puntaje
   let pts = 100;
   if (state.firstAttempt) pts += 50;
-  // Multiplicador por racha
   const multiplier = 1 + (state.streak - 1) * 0.25;
   pts = Math.round(pts * multiplier);
   state.score += pts;
   state.firstAttempt = true;
 
+  // Actualizar elementos visuales
   const el1 = getCardElement(c1.id);
   const el2 = getCardElement(c2.id);
   el1.classList.add('matched');
   el2.classList.add('matched');
 
+  // Efectos
   SFX.match();
   showSyllableOverlay(c1.value, c1.syllables);
+  updateHUD();
 
-  // Resetear estado después del mismo delay que mismatch para consistencia
+  // Resetear estado después de un delay consistente
   setTimeout(() => {
     state.flippedCards = [];
     state.locked = false;
     lockAllCards(false);
-    updateHUD();
 
     // Verificar victoria
     if (state.pairsFound === state.totalPairs) {
-      setTimeout(handleVictory, 600);
+      setTimeout(handleVictory, 500);
     }
-  }, 600);
+  }, 800);
 }
 
 function handleMismatch(c1, c2) {
+function handleMismatch(c1, c2) {
+  // Penalización
   state.errors++;
   state.streak = 0;
   state.firstAttempt = true;
   state.score = Math.max(0, state.score - 10);
 
+  // Mostrar error visual
   const el1 = getCardElement(c1.id);
   const el2 = getCardElement(c2.id);
   el1.classList.add('error');
   el2.classList.add('error');
 
+  // Efectos
   SFX.error();
 
+  // Resetear cartas después de un delay consistente
   setTimeout(() => {
-    // Resetear cartas que no coinciden
+    // Resetear solo las cartas que no coinciden
     c1.revealed = false;
     c2.revealed = false;
     el1.classList.remove('flipped', 'error');
@@ -494,7 +514,8 @@ function handleMismatch(c1, c2) {
     state.locked = false;
     lockAllCards(false);
     updateHUD();
-  }, 600);
+  }, 800);
+}
 }
 
 function getCardElement(id) {
@@ -505,8 +526,15 @@ function lockAllCards(locked) {
   document.querySelectorAll('.card').forEach(c => {
     const cardId = parseInt(c.dataset.id);
     const card = state.cards[cardId];
-    // No bloquear/desbloquear cartas que ya están matched
-    if (card && !card.matched) {
+
+    // Verificación de seguridad: cartas matched nunca deben ser bloqueadas
+    if (card && card.matched) {
+      c.classList.remove('locked'); // Asegurar que estén desbloqueadas
+      return;
+    }
+
+    // Para cartas no matched, aplicar el lock normalmente
+    if (card) {
       if (locked) c.classList.add('locked');
       else c.classList.remove('locked');
     }
