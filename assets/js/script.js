@@ -488,7 +488,6 @@ function handleMatch(c1, c2) {
 }
 
 function handleMismatch(c1, c2) {
-function handleMismatch(c1, c2) {
   console.log('Ejecutando handleMismatch');
   // Penalización
   state.errors++;
