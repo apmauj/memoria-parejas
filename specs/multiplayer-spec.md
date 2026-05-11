@@ -1,727 +1,640 @@
-# Spec V2 — Multiplayer para Juego Infantil de Memoria Educativo
+# Spec V2 — Multiplayer Local por Turnos (GitHub Pages Compatible)
 
 ## Objetivo
 
-Agregar funcionalidades multijugador al juego de memoria educativo, permitiendo:
+Implementar un sistema multiplayer local simple para el juego de memoria educativo, permitiendo que:
 
-* partidas locales,
-* partidas online,
-* interacción cooperativa y competitiva,
-* experiencia segura para niños,
-* sincronización en tiempo real.
+* jueguen de 1 a 4 personas,
+* compartan el mismo dispositivo,
+* jueguen por turnos,
+* acumulen puntaje individual,
+* al finalizar se genere un ranking.
 
-El multiplayer debe priorizar:
+IMPORTANTE:
+El juego debe seguir siendo:
 
-* simplicidad,
-* baja fricción,
-* UX infantil,
-* facilidad para familias/docentes.
-
----
-
-# Objetivos de Diseño
-
-## Prioridades
-
-### 1. Fácil de usar
-
-Un niño debe poder:
-
-* crear partida,
-* unirse,
-* jugar,
-  sin conocimientos técnicos.
+* 100% frontend,
+* sin backend,
+* compatible con GitHub Pages,
+* ejecutable offline opcionalmente.
 
 ---
 
-### 2. Seguro
+# Alcance de la V2
 
-Evitar:
+## Incluir
 
-* chats abiertos,
-* contenido libre,
-* exposición pública.
-
----
-
-### 3. Social
-
-Favorecer:
-
-* cooperación,
-* aprendizaje conjunto,
-* juego familiar.
+* Multiplayer local por turnos
+* Configuración de jugadores
+* Score individual
+* Cambio automático de turno
+* Ranking final
+* HUD multiplayer
+* Pantalla final con ganador
 
 ---
 
-# Arquitectura General
+# NO incluir
 
-## Frontend
-
-* HTML/CSS/JS
-* WebSocket client
-
-## Backend sugerido
-
-Node.js + WebSocket server.
-
-Opciones:
-
-* Socket.IO
-* Colyseus
-* Firebase Realtime
-* Supabase Realtime
+* Backend
+* WebSockets
+* Login
+* Multiplayer online
+* Servidor
+* Base de datos remota
 
 ---
 
-# Modos Multiplayer
+# Compatibilidad Técnica
 
-| Modo          | Tipo    |
-| ------------- | ------- |
-| Local Hotseat | Offline |
-| Online 1 vs 1 | Online  |
-| Cooperativo   | Online  |
-| Aula/Clase    | Online  |
-| Torneo        | Online  |
+## Debe funcionar en:
+
+* GitHub Pages
+* Navegadores modernos
+* Tablets
+* PCs
+* Modo touch
 
 ---
 
-# 1. Modo Local (Hotseat)
+# Concepto de Juego Multiplayer
 
-## Objetivo
+Todos los jugadores usan:
 
-Dos o más niños jugando en el mismo dispositivo.
+* el mismo tablero,
+* la misma pantalla,
+* el mismo mouse/touch.
 
-## Funcionamiento
+Los jugadores juegan:
 
-* Los jugadores alternan turnos.
-* El tablero es compartido.
-* El score se separa por jugador.
-
-## Reglas
-
-* Si acierta:
-
-  * sigue jugando.
-* Si falla:
-
-  * cambia turno.
-
-## UI
-
-Panel superior:
-
-```txt
-TURNO DE SOFÍA
+```txt id="3bmn0o"
+POR TURNOS
 ```
 
 ---
 
-# 2. Multiplayer Online 1 vs 1
+# Flujo General
 
-## Flujo
+```txt id="9o5fzw"
+1. Elegir cantidad de jugadores
+2. Escribir nombres
+3. Cargar imágenes
+4. Iniciar partida
+5. Jugadores alternan turnos
+6. Se acumulan puntos individuales
+7. Finaliza partida
+8. Mostrar ranking final
+```
 
-### Crear Sala
+---
 
-Jugador:
+# Configuración Inicial
 
-* escribe nombre,
-* crea sala.
+## Pantalla “Jugadores”
 
-El sistema genera:
+### Selector
 
-* código corto,
-* QR opcional.
+Cantidad de jugadores:
+
+* 1
+* 2
+* 3
+* 4
+
+---
+
+# Inputs de Nombre
+
+## Ejemplo
+
+```txt id="cbdbx6"
+JUGADOR 1: SOFIA
+JUGADOR 2: JUAN
+JUGADOR 3: MARTINA
+JUGADOR 4: LUCAS
+```
+
+---
+
+# Validaciones
+
+## Requisitos
+
+* mínimo 1 nombre válido,
+* nombres únicos deseable,
+* máximo 12 caracteres recomendado.
+
+---
+
+# Estructura de Datos
+
+## Player
+
+```js id="cpr1yv"
+{
+  id: 1,
+  name: "SOFIA",
+  score: 0,
+  matches: 0,
+  mistakes: 0,
+  streak: 0,
+  turnsPlayed: 0
+}
+```
+
+---
+
+# Sistema de Turnos
+
+## Regla principal
+
+Solo un jugador puede jugar a la vez.
+
+---
+
+# Indicador Visual
+
+Debe mostrarse claramente:
+
+```txt id="f9y0vw"
+TURNO DE SOFIA
+```
+
+---
+
+# Recomendación UX
+
+## Resaltar jugador actual
+
+* borde brillante,
+* color especial,
+* avatar iluminado,
+* animación suave.
+
+---
+
+# Reglas de Turno
+
+## Si el jugador acierta
+
+### Opción recomendada (más divertida)
+
+El jugador:
+
+```txt id="zc9bne"
+SIGUE JUGANDO
+```
+
+hasta fallar.
+
+---
+
+## Si falla
+
+* pierde turno,
+* cartas se ocultan,
+* siguiente jugador juega.
+
+---
+
+# Orden de Turnos
+
+## Sistema circular
+
+```txt id="w0cqg6"
+1 → 2 → 3 → 4 → 1
+```
+
+---
+
+# Score Multiplayer
+
+## Cada jugador tiene:
+
+* puntos,
+* parejas encontradas,
+* errores,
+* racha.
+
+---
+
+# Sistema de Puntos
+
+## Recomendado
+
+| Acción                | Puntos |
+| --------------------- | ------ |
+| Pareja correcta       | +100   |
+| Primer intento rápido | +50    |
+| Racha                 | +25    |
+| Error                 | -10    |
+
+---
+
+# Restricciones
+
+## Nunca permitir:
+
+```txt id="g2qh1l"
+score < 0
+```
+
+---
+
+# HUD Multiplayer
+
+## Panel superior o lateral
+
+Cada jugador debe tener:
+
+* nombre,
+* puntos,
+* parejas,
+* color/avatar.
+
+---
+
+# Ejemplo Visual
+
+```txt id="x8efwq"
+SOFIA ⭐ 320
+JUAN ⭐ 180
+LUCAS ⭐ 90
+```
+
+---
+
+# Ranking Dinámico
+
+## Deseable
+
+El HUD puede reordenarse automáticamente según score.
+
+---
+
+# Animaciones Multiplayer
+
+## Cuando cambia turno
+
+Mostrar transición:
+
+```txt id="nh5ovj"
+AHORA JUEGA JUAN
+```
+
+---
+
+# Duración sugerida
+
+Entre:
+
+```txt id="fgknbn"
+1 y 2 segundos
+```
+
+---
+
+# Fin de Partida
+
+## Condición
+
+Todas las parejas descubiertas.
+
+---
+
+# Pantalla Final
+
+## Mostrar
+
+### Ranking completo
+
+```txt id="oc5byi"
+🥇 SOFIA - 850
+🥈 JUAN - 600
+🥉 MARTINA - 450
+```
+
+---
+
+# Mostrar también
+
+* cantidad de parejas,
+* errores,
+* precisión,
+* tiempo total.
+
+---
+
+# Cálculo de Precisión
+
+## Fórmula
+
+\text{Precisión} = \frac{\text{Aciertos}}{\text{Intentos}} \times 100
+
+---
+
+# Bonus Opcional
+
+## Premio especial
+
+### Categorías
+
+* Mejor memoria
+* Menos errores
+* Más rápido
+* Mejor racha
+
+---
+
+# Modo 1 Jugador
+
+## Debe seguir funcionando
+
+El multiplayer local NO reemplaza:
+
+```txt id="8m76br"
+single player
+```
+
+---
+
+# Configuración de Dificultad
+
+## Compatible con multiplayer
+
+| Modo    | Pares |
+| ------- | ----- |
+| Fácil   | 4     |
+| Medio   | 6     |
+| Difícil | 8     |
+| Experto | 12    |
+
+---
+
+# Recomendaciones de UX Infantil
+
+## Importante
+
+Cuando cambia turno:
+
+* pausar interacción brevemente,
+* evitar clicks accidentales,
+* mostrar feedback visual grande.
+
+---
+
+# Sistema de Colores
+
+## Recomendado
+
+Cada jugador:
+
+* tiene color propio,
+* avatar simple,
+* ícono.
 
 Ejemplo:
 
-```txt
-AB7K
+* Azul
+* Verde
+* Amarillo
+* Rojo
+
+---
+
+# Avatares Simples (Deseable)
+
+## Opciones
+
+* estrella,
+* dinosaurio,
+* gato,
+* cohete.
+
+---
+
+# Persistencia Local
+
+## Deseable
+
+Guardar:
+
+* últimos jugadores,
+* mejores scores,
+* configuraciones.
+
+Usar:
+
+```txt id="e8rz9d"
+localStorage
 ```
 
 ---
 
-### Unirse a Sala
+# Ranking Histórico Local
 
-Segundo jugador:
+## Opcional
 
-* ingresa código,
-* entra a partida.
+Tabla:
+
+* nombre,
+* puntaje,
+* fecha.
 
 ---
 
-# Estados de Sala
+# Arquitectura Recomendada
 
-```txt
-WAITING
-READY
-PLAYING
-FINISHED
-DISCONNECTED
+```txt id="z22mhv"
+/js
+  game.js
+  board.js
+  multiplayer.js
+  score.js
+  storage.js
 ```
 
 ---
 
-# Mecánica Online
+# Multiplayer.js — Responsabilidades
 
-## Turnos
+## Debe manejar:
 
-### Si acierta:
-
-* mantiene turno.
-
-### Si falla:
-
-* turno cambia automáticamente.
-
----
-
-# Sincronización
-
-## Debe sincronizar:
-
-* cartas reveladas,
-* cartas acertadas,
+* jugadores,
+* turnos,
 * score,
-* turno actual,
-* tiempo,
+* ranking,
+* cambio de jugador,
 * fin de partida.
 
 ---
 
-# Eventos WebSocket
+# Estados del Juego
 
-## Cliente → Servidor
-
-```js
-CREATE_ROOM
-JOIN_ROOM
-START_GAME
-FLIP_CARD
-MATCH_FOUND
-END_TURN
-PLAYER_READY
-LEAVE_ROOM
+```txt id="jlwm2r"
+SETUP
+PLAYING
+TURN_TRANSITION
+FINISHED
 ```
 
 ---
 
-## Servidor → Cliente
+# Lógica Recomendada
 
-```js
-ROOM_CREATED
-PLAYER_JOINED
-GAME_STARTED
-CARD_REVEALED
-MATCH_SUCCESS
-MATCH_FAILED
-TURN_CHANGED
-GAME_FINISHED
-PLAYER_DISCONNECTED
+## Variable actual
+
+```js id="smbtqg"
+let currentPlayerIndex = 0;
 ```
 
 ---
 
-# Modelo de Datos Multiplayer
+# Cambio de Turno
 
-## Player
-
-```js
-{
-  id: "socket-id",
-  name: "SOFIA",
-  score: 350,
-  matches: 4,
-  connected: true
-}
+```js id="7b8brv"
+currentPlayerIndex =
+  (currentPlayerIndex + 1) % players.length;
 ```
 
 ---
 
-## Room
+# Requisitos de Accesibilidad
 
-```js
-{
-  roomId: "AB7K",
-  players: [],
-  gameState: {},
-  currentTurn: 0,
-  status: "PLAYING"
-}
+## Importantes
+
+* Letras grandes
+* Alto contraste
+* Indicador de turno MUY visible
+* Compatible touch
+* Tiempo suficiente para lectura
+
+---
+
+# Sonidos Multiplayer
+
+## Recomendados
+
+### Cambio turno
+
+“ding”
+
+### Victoria
+
+fanfarria suave
+
+### Error
+
+sonido corto amigable
+
+---
+
+# Responsive
+
+## Tablets MUY importantes
+
+El HUD debe:
+
+* reacomodarse,
+* evitar tapar tablero.
+
+---
+
+# Layout Recomendado
+
+## Desktop
+
+HUD lateral.
+
+## Tablet/Móvil
+
+HUD horizontal arriba.
+
+---
+
+# Recomendaciones Técnicas
+
+## IMPORTANTE
+
+No usar:
+
+* frameworks pesados,
+* backend,
+* dependencias innecesarias.
+
+---
+
+# Stack Ideal
+
+## Simple y portable
+
+* HTML
+* CSS
+* JS Vanilla
+
+Compatible con:
+
+```txt id="ggm6uq"
+GitHub Pages
 ```
 
 ---
 
-# Reglas de Juego Online
+# Funcionalidades Deseables Futuras
 
-## Validación centralizada
+## V3
 
-IMPORTANTE:
-El servidor debe validar:
-
-* coincidencias,
-* score,
-* turnos.
-
-Nunca confiar únicamente en frontend.
+* Equipos
+* Cooperativo
+* Temporizador por turno
+* Minitorneos
+* Estadísticas avanzadas
 
 ---
 
-# Anti-Cheat Básico
+# MVP Multiplayer Local
 
-## Validaciones
+## Para considerar V2 completa
 
-* impedir doble click rápido,
-* impedir revelar 3 cartas,
-* impedir acciones fuera de turno.
+Debe incluir:
 
----
-
-# 3. Modo Cooperativo
-
-## Objetivo
-
-Todos juegan juntos contra el tablero.
-
-## Características
-
-* score compartido,
-* sin turnos,
-* cronómetro común,
-* meta grupal.
-
-Ideal para:
-
-* padres + hijos,
-* aula escolar,
-* terapia educativa.
+✅ 1–4 jugadores
+✅ Turnos automáticos
+✅ Score individual
+✅ Ranking final
+✅ Cambio visual de turno
+✅ Compatible touch
+✅ Funciona en GitHub Pages
 
 ---
 
-# 4. Modo Aula / Classroom
+# Recomendación Importante de Diseño
 
-## Objetivo
+Para niños pequeños, el multiplayer competitivo funciona mejor si:
 
-Un docente controla múltiples jugadores.
-
----
-
-# Funcionalidades
-
-## Docente puede:
-
-* crear sala,
-* elegir dificultad,
-* cargar imágenes,
-* iniciar partida,
-* ver progreso de alumnos.
+* las penalizaciones son suaves,
+* todos reciben feedback positivo,
+* incluso el último lugar recibe celebración.
 
 ---
 
-# Vista Docente
+# Sugerencia UX Muy Valiosa
 
-## Panel con:
+En vez de:
 
-* jugadores conectados,
-* score individual,
-* tiempo,
-* ranking,
-* actividad.
-
----
-
-# Funcionalidades Deseables
-
-## Congelar partida
-
-```txt
-PAUSE GAME
+```txt id="w13c1u"
+PERDISTE
 ```
 
----
+usar:
 
-## Forzar reinicio
-
----
-
-## Expulsar jugador
-
----
-
-# 5. Ranking Online
-
-## Modos
-
-### Global
-
-Top scores.
-
-### Por aula
-
-Ranking privado.
-
-### Familiar
-
-Ranking local familiar.
-
----
-
-# Base de Datos Sugerida
-
-## Opciones
-
-* Firebase
-* Supabase
-* PostgreSQL
-
----
-
-# Tablas
-
-## users
-
-```sql
-id
-name
-avatar
-created_at
+```txt id="xpphzw"
+¡MUY BIEN JUGADO!
 ```
 
----
-
-## matches
-
-```sql
-id
-room_id
-date
-winner
-duration
-```
-
----
-
-## scores
-
-```sql
-id
-user_id
-score
-matches
-errors
-```
-
----
-
-# UX Multiplayer
-
-## Indicadores Visuales
-
-### Turno actual
-
-Glow/color alrededor del jugador.
-
----
-
-### Jugador desconectado
-
-Ícono gris:
-
-```txt
-DESCONECTADO
-```
-
----
-
-### Esperando jugador
-
-Animación amigable.
-
----
-
-# Diseño de Lobby
-
-## Elementos
-
-* código sala grande,
-* botón copiar,
-* QR,
-* lista jugadores,
-* READY status.
-
----
-
-# Reconexión
-
-## Requisito importante
-
-Si un jugador pierde conexión:
-
-* intentar reconectar automáticamente.
-
-Timeout sugerido:
-
-```txt
-30 segundos
-```
-
----
-
-# Audio Multiplayer
-
-## Eventos
-
-* jugador entra,
-* turno cambia,
-* victoria,
-* error.
-
----
-
-# Accesibilidad Multiplayer
-
-## Requisitos
-
-* feedback visual + sonoro,
-* indicadores grandes,
-* turnos claros,
-* nombres legibles.
-
----
-
-# Seguridad Infantil
-
-## MUY IMPORTANTE
-
-NO incluir:
-
-* chat libre,
-* mensajes personalizados,
-* subida pública de imágenes.
-
----
-
-# Comunicación Segura
-
-## Opciones recomendadas
-
-### Emojis rápidos
-
-Ejemplo:
-
-* 👍
-* 🎉
-* 😊
-* ⭐
-
----
-
-### Mensajes predefinidos
-
-* “¡BIEN!”
-* “TU TURNO”
-* “EXCELENTE”
-
----
-
-# Performance
-
-## Objetivos
-
-### Latencia
-
-Menor a:
-
-```txt
-150ms
-```
-
----
-
-### Sincronización
-
-Las cartas deben reflejar cambios casi instantáneamente.
-
----
-
-# Compatibilidad
-
-## Debe funcionar en:
-
-* Chrome,
-* Firefox,
-* Edge,
-* tablets,
-* celulares.
-
----
-
-# Escalabilidad
-
-## MVP Multiplayer
-
-2 jugadores.
-
----
-
-## Futuro
-
-Hasta:
-
-```txt
-20+ jugadores
-```
-
-Modo aula.
-
----
-
-# Arquitectura Sugerida
-
-## Frontend
-
-```txt
-/game
-/lobby
-/room
-/multiplayer
-```
-
----
-
-## Backend
-
-```txt
-/socket
-/rooms
-/game-engine
-/auth
-```
-
----
-
-# Flujo Completo Online
-
-```txt
-1. Jugador crea sala
-2. Obtiene código
-3. Otro jugador entra
-4. Ambos READY
-5. Comienza partida
-6. Turnos sincronizados
-7. Score actualizado realtime
-8. Fin partida
-9. Ranking final
-```
-
----
-
-# Funcionalidades Futuras (V3)
-
-## Avatares
-
-Personajes infantiles.
-
----
-
-## Reacciones animadas
-
-Mini stickers.
-
----
-
-## Coop con voz
-
-WebRTC opcional.
-
----
-
-## Modo historia
-
-Resolver tableros cooperativamente.
-
----
-
-# Recomendación Técnica Importante
-
-## Para MVP online:
-
-Usar:
-
-* frontend estático,
-* Socket.IO,
-* Node.js,
-* rooms simples en memoria.
-
----
-
-## Evitar inicialmente:
-
-* microservicios,
-* arquitectura compleja,
-* auth pesada.
-
----
-
-# MVP Multiplayer Recomendado
-
-## Incluir SOLO
-
-### Online 1v1
-
-* lobby,
-* código sala,
-* sincronización,
-* score,
-* turnos.
-
-### Local Hotseat
-
-### Ranking local
-
----
-
-# Dejar para V3
-
-* cuentas reales,
-* chat,
-* matchmaking,
-* perfiles,
-* amigos,
-* torneos,
-* cross-platform.
-
----
-
-# Criterios de Aceptación
-
-## Multiplayer V2 completo cuando:
-
-* Dos usuarios pueden conectarse.
-* Ambos ven el mismo tablero.
-* Los turnos se sincronizan.
-* El score se actualiza correctamente.
-* El juego finaliza sin desincronización.
-* Reconexión básica funciona.
-* Compatible con tablets y desktop.
-
----
-
-# Sugerencia Estratégica Importante
-
-Para este tipo de juego infantil, el modo más fuerte probablemente NO sea competitivo.
-
-El modo:
-
-```txt
-PADRE + HIJO COOPERATIVO
-```
-
-puede transformarse en la característica diferencial más poderosa del proyecto.
-
-Especialmente si agregas:
-
-* lectura en voz,
-* fotos familiares,
-* recompensas,
-* progreso educativo.
+y destacar:
+
+* aciertos,
+* progreso,
+* participación,
+* mejora.
