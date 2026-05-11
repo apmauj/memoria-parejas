@@ -225,28 +225,56 @@
   .preview-item .remove-btn:hover { opacity: 1; transform: scale(1.15); }
 
   /* ====== DIFICULTAD ====== */
-  .diff-buttons {
-    display: flex; gap: 10px; justify-content: center;
-    flex-wrap: wrap;
+  .difficulty-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .difficulty-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 16px;
+    background: rgba(255,255,255,0.6);
+    border-radius: var(--radius);
+    border: 2px solid var(--card-border);
+    transition: all 0.2s;
+  }
+  .difficulty-option:hover {
+    border-color: var(--accent);
+    background: rgba(255,107,53,0.05);
+  }
+  .difficulty-label {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--fg);
+    text-align: center;
+    line-height: 1.2;
+  }
+  .difficulty-desc {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--fg-light);
+    text-align: center;
+    margin-bottom: 4px;
   }
   .diff-btn {
-    flex: 1; min-width: 150px; max-width: 220px;
-    padding: 14px 12px;
+    width: 100%;
+    padding: 12px 20px;
     border: 2.5px solid var(--card-border);
     border-radius: var(--radius-sm);
     background: var(--card-bg);
     font-family: inherit;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     font-weight: 600;
     color: var(--fg);
     cursor: pointer;
     transition: all 0.2s;
     text-transform: uppercase;
-    line-height: 1.3;
-    word-break: break-word;
-    text-align: center;
   }
-  .diff-btn small { display: block; font-size: 0.7rem; font-weight: 400; color: var(--fg-light); margin-top: 2px; }
   .diff-btn:hover { border-color: var(--accent); }
   .diff-btn.active {
     border-color: var(--accent);
@@ -740,11 +768,27 @@
 
     <div class="form-group">
       <label class="form-label">DIFICULTAD</label>
-      <div class="diff-buttons">
-        <button class="diff-btn active" data-diff="easy">FÁCIL<small>8 PAREJAS</small></button>
-        <button class="diff-btn" data-diff="medium">MEDIA<small>12 PAREJAS</small></button>
-        <button class="diff-btn" data-diff="hard">DIFÍCIL<small>16 PAREJAS</small></button>
-        <button class="diff-btn" data-diff="custom">PERSONALIZADO<small>2-30 PAREJAS</small></button>
+      <div class="difficulty-grid">
+        <div class="difficulty-option">
+          <div class="difficulty-label">FÁCIL</div>
+          <div class="difficulty-desc">8 PAREJAS</div>
+          <button class="diff-btn active" data-diff="easy">JUGAR</button>
+        </div>
+        <div class="difficulty-option">
+          <div class="difficulty-label">MEDIA</div>
+          <div class="difficulty-desc">12 PAREJAS</div>
+          <button class="diff-btn" data-diff="medium">JUGAR</button>
+        </div>
+        <div class="difficulty-option">
+          <div class="difficulty-label">DIFÍCIL</div>
+          <div class="difficulty-desc">16 PAREJAS</div>
+          <button class="diff-btn" data-diff="hard">JUGAR</button>
+        </div>
+        <div class="difficulty-option">
+          <div class="difficulty-label">PERSONALIZADO</div>
+          <div class="difficulty-desc">2-30 PAREJAS</div>
+          <button class="diff-btn" data-diff="custom">JUGAR</button>
+        </div>
       </div>
       <div class="custom-pairs-selector" id="custom-pairs-selector" style="display: none;">
         <label class="form-label-small">CANTIDAD DE PAREJAS</label>
