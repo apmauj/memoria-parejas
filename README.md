@@ -17,6 +17,7 @@ Un juego de memoria educativo para niños, refactorizado con estructura modular 
 - **Sistema de ranking**: Guarda los mejores puntajes localmente
 - **Código QR**: Comparte el juego fácilmente
 - **Accesibilidad**: Navegación por teclado, etiquetas ARIA
+- **🎯 Modo Multiplayer Local**: 2-4 jugadores en el mismo dispositivo con turnos y ranking final
 
 ## 🚀 Despliegue en GitHub Pages
 
@@ -57,14 +58,34 @@ memoria-parejas/
 
 ## 🎯 Cómo Jugar
 
-1. **Ingresa tu nombre** en la pantalla de inicio
-2. **Elige la dificultad** (fácil, medio, difícil)
-3. **Selecciona el modo**:
-   - **Juego por defecto**: Juega con palabras y emojis predefinidos
-   - **Juego personalizado**: Arrastra y suelta imágenes para crear tus propios pares
-4. **Encuentra los pares**: Haz clic en las cartas para voltearlas
-5. **Gana puntos**: Obtén puntos por aciertos y rachas consecutivas
-6. **Comparte tu puntuación**: Usa el código QR para compartir el juego
+1. **Elige el modo**: Solo o con amigos (multiplayer local)
+2. **Ingresa tu nombre** (modo solo) o configura los jugadores (multiplayer)
+3. **Elige la dificultad** (fácil, medio, difícil, personalizado)
+4. **Carga imágenes** (opcional) o juega con emojis predefinidos
+5. **Encuentra los pares**: Haz clic en las cartas para voltearlas
+6. **En multiplayer**: Los jugadores alternan turnos, el que acierta sigue jugando
+7. **Gana puntos**: Obtén puntos por aciertos y rachas consecutivas
+8. **Ranking final**: En multiplayer, se muestra el ranking con medallas
+9. **Comparte tu puntuación**: Usa el código QR para compartir el juego
+
+## 🎯 Modo Multiplayer Local
+
+**¿Cómo funciona?**
+- **2-4 jugadores** usan el mismo dispositivo (hotseat)
+- **Sistema de turnos**: El que acierta sigue jugando hasta fallar
+- **Score individual**: Cada jugador acumula sus propios puntos
+- **Ranking final**: Se muestra quién ganó con medallas 🥇🥈🥉
+
+**Sistema de puntos:**
+- Pareja correcta: +100 puntos
+- Primer intento rápido: +50 puntos bonus
+- Racha consecutiva: +25 puntos por cada pareja en racha
+- Error: -10 puntos
+
+**Interfaz:**
+- Panel superior muestra "TURNO DE [JUGADOR]"
+- Cada jugador tiene su propio score y estadísticas
+- Ranking final con estadísticas completas
 
 ## 🎨 Personalización
 
