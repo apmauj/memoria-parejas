@@ -752,6 +752,282 @@ body {
   #board-wrapper { padding: 16px; }
 }
 
+/* ====== MULTIPLAYER STYLES ====== */
+
+/* Selector de modo de juego */
+.game-mode-selector {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.mode-btn {
+  flex: 1;
+  padding: 16px 20px;
+  border: 3px solid var(--card-border);
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--fg);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.mode-btn:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.mode-btn.active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: white;
+}
+
+.mode-btn i {
+  font-size: 1.5rem;
+}
+
+/* Configuración de jugadores */
+.players-config {
+  background: var(--card-bg);
+  border: 2px solid var(--card-border);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-top: 10px;
+}
+
+.player-count-selector {
+  margin-bottom: 20px;
+}
+
+.player-count-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.count-btn {
+  width: 50px;
+  height: 50px;
+  border: 2px solid var(--card-border);
+  background: var(--card-bg);
+  border-radius: 50%;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--fg);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.count-btn:hover {
+  border-color: var(--accent);
+  transform: scale(1.05);
+}
+
+.count-btn.active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: white;
+}
+
+.players-names {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.player-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.form-label-small {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--fg-light);
+  letter-spacing: 0.5px;
+}
+
+.form-input-small {
+  padding: 10px 12px;
+  border: 2px solid var(--card-border);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  background: var(--card-bg);
+  color: var(--fg);
+  transition: border-color 0.2s ease;
+}
+
+.form-input-small:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* Panel de jugadores en juego */
+.players-panel {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  right: 20px;
+  background: var(--hud-bg);
+  border-radius: var(--radius);
+  padding: 15px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(10px);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  justify-content: center;
+  z-index: 10;
+}
+
+.player-info {
+  background: var(--card-bg);
+  border: 2px solid var(--card-border);
+  border-radius: var(--radius-sm);
+  padding: 10px 15px;
+  min-width: 120px;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.player-info.current {
+  border-color: var(--accent);
+  background: rgba(255, 107, 53, 0.1);
+  transform: scale(1.05);
+}
+
+.player-name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--fg);
+  margin-bottom: 5px;
+}
+
+.player-stats {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--fg-light);
+}
+
+.player-score {
+  color: var(--gold);
+  font-weight: 600;
+}
+
+.player-matches {
+  color: var(--accent2);
+}
+
+/* Ranking Multiplayer */
+.multiplayer-ranking {
+  margin: 20px 0;
+  padding: 20px;
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  border: 2px solid var(--card-border);
+}
+
+.ranking-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  margin-bottom: 10px;
+  background: var(--bg-alt);
+  border-radius: var(--radius-sm);
+  border: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.ranking-item:last-child {
+  margin-bottom: 0;
+}
+
+.ranking-item.winner {
+  border-color: var(--gold);
+  background: rgba(253, 203, 110, 0.1);
+}
+
+.ranking-position {
+  font-size: 1.2rem;
+  font-weight: 700;
+  min-width: 60px;
+  text-align: center;
+}
+
+.ranking-player {
+  flex: 1;
+}
+
+.ranking-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--fg);
+  margin-bottom: 5px;
+}
+
+.ranking-stats {
+  display: flex;
+  gap: 15px;
+  font-size: 0.8rem;
+  color: var(--fg-light);
+}
+
+/* Responsive Multiplayer */
+@media (max-width: 600px) {
+  .game-mode-selector {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .players-names {
+    grid-template-columns: 1fr;
+  }
+
+  .players-panel {
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    padding: 10px;
+    gap: 8px;
+  }
+
+  .player-info {
+    min-width: 100px;
+    padding: 8px 12px;
+  }
+
+  .player-name {
+    font-size: 0.8rem;
+  }
+
+  .player-stats {
+    font-size: 0.7rem;
+  }
+
+  .ranking-item {
+    flex-direction: column;
+    text-align: center;
+    gap: 10px;
+  }
+
+  .ranking-position {
+    min-width: auto;
+  }
+}
+
 /* ====== BOTÓN FLOTANTE QR ====== */
 #qr-float-btn {
   position: fixed;

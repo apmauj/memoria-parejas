@@ -47,7 +47,12 @@ let state = {
   elapsedSeconds: 0,
   locked: false,
   muted: false,
-  useCustom: false
+  useCustom: false,
+  // MULTIPLAYER
+  isMultiplayer: false,
+  players: [],         // [{ id, name, score, matches, mistakes, streak, turnsPlayed }]
+  currentPlayerIndex: 0,
+  gameMode: 'single'   // 'single' o 'multiplayer'
 };
 
 // Imágenes cargadas por el usuario
@@ -265,6 +270,14 @@ function createBackgroundShapes() {
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
+
+  // Manejar panel de jugadores
+  const playersPanel = document.getElementById('players-panel');
+  if (id === 'screen-game' && state.isMultiplayer) {
+    playersPanel.style.display = 'flex';
+  } else {
+    playersPanel.style.display = 'none';
+  }
 }
 
 /* ============================================================
@@ -487,16 +500,23 @@ function handleMatch(c1, c2) {
   // Marcar cartas como matched
   c1.matched = true;
   c2.matched = true;
-  state.pairsFound++;
-  state.streak++;
-  if (state.streak > state.bestStreak) state.bestStreak = state.streak;
+
+  // Actualizar estadísticas del jugador actual
+  addMatchToCurrentPlayer();
 
   // Calcular puntaje
   let pts = 100;
   if (state.firstAttempt) pts += 50;
-  const multiplier = 1 + (state.streak - 1) * 0.25;
+
+  // Calcular racha del jugador actual
+  const currentPlayer = getCurrentPlayer();
+  const currentStreak = currentPlayer ? currentPlayer.streak + 1 : state.streak + 1;
+  updateStreakForCurrentPlayer(currentStreak);
+
+  const multiplier = 1 + (currentStreak - 1) * 0.25;
   pts = Math.round(pts * multiplier);
-  state.score += pts;
+
+  addScoreToCurrentPlayer(pts);
   state.firstAttempt = true;
 
   // Actualizar elementos visuales
@@ -520,15 +540,16 @@ function handleMatch(c1, c2) {
     if (state.pairsFound === state.totalPairs) {
       setTimeout(handleVictory, 500);
     }
+    // En multiplayer, el jugador sigue jugando si acertó
   }, 800);
 }
 
 function handleMismatch(c1, c2) {
   // Penalización
-  state.errors++;
-  state.streak = 0;
+  addMistakeToCurrentPlayer();
+  updateStreakForCurrentPlayer(0);
+  addScoreToCurrentPlayer(-10); // Penalización de 10 puntos
   state.firstAttempt = true;
-  state.score = Math.max(0, state.score - 10);
 
   // Mostrar error visual
   const el1 = getCardElement(c1.id);
@@ -553,6 +574,13 @@ function handleMismatch(c1, c2) {
     state.flippedCards = [];
     state.locked = false;
     lockAllCards(false);
+
+    // En multiplayer, cambiar de turno cuando falla
+    if (state.isMultiplayer) {
+      incrementTurnsForCurrentPlayer();
+      nextTurn();
+    }
+
     updateHUD();
   }, 800);
 }
@@ -620,12 +648,59 @@ function formatTime(s) {
    HUD
    ============================================================ */
 function updateHUD() {
-  document.getElementById('hud-name').textContent = state.playerName;
-  document.getElementById('hud-score').textContent = state.score;
-  document.getElementById('hud-pairs').textContent = `${state.pairsFound}/${state.totalPairs}`;
-  document.getElementById('hud-attempts').textContent = state.attempts;
-  document.getElementById('hud-errors').textContent = state.errors;
-  document.getElementById('hud-streak').textContent = state.streak;
+  if (state.isMultiplayer) {
+    // Modo multiplayer: mostrar información de todos los jugadores
+    const currentPlayer = getCurrentPlayer();
+    document.getElementById('hud-name').textContent = `TURNO DE ${currentPlayer ? currentPlayer.name : 'MULTIJUGADOR'}`;
+
+    // Mostrar score del jugador actual
+    document.getElementById('hud-score').textContent = currentPlayer ? currentPlayer.score : 0;
+
+    // Mostrar progreso general
+    document.getElementById('hud-pairs').textContent = `${state.pairsFound}/${state.totalPairs}`;
+    document.getElementById('hud-attempts').textContent = state.attempts;
+
+    // Mostrar errores del jugador actual
+    document.getElementById('hud-errors').textContent = currentPlayer ? currentPlayer.mistakes : 0;
+
+    // Mostrar racha del jugador actual
+    document.getElementById('hud-streak').textContent = currentPlayer ? currentPlayer.streak : 0;
+
+    // Actualizar panel de jugadores
+    updatePlayersPanel();
+
+  } else {
+    // Modo single player: mostrar información normal
+    document.getElementById('hud-name').textContent = state.playerName;
+    document.getElementById('hud-score').textContent = state.score;
+    document.getElementById('hud-pairs').textContent = `${state.pairsFound}/${state.totalPairs}`;
+    document.getElementById('hud-attempts').textContent = state.attempts;
+    document.getElementById('hud-errors').textContent = state.errors;
+    document.getElementById('hud-streak').textContent = state.streak;
+  }
+}
+
+// Actualizar panel de jugadores en multiplayer
+function updatePlayersPanel() {
+  const playersPanel = document.getElementById('players-panel');
+  if (!playersPanel) return;
+
+  playersPanel.innerHTML = '';
+
+  state.players.forEach((player, index) => {
+    const playerDiv = document.createElement('div');
+    playerDiv.className = `player-info ${index === state.currentPlayerIndex ? 'current' : ''}`;
+
+    playerDiv.innerHTML = `
+      <div class="player-name">${player.name}</div>
+      <div class="player-stats">
+        <span class="player-score">${player.score}pts</span>
+        <span class="player-matches">${player.matches}🃏</span>
+      </div>
+    `;
+
+    playersPanel.appendChild(playerDiv);
+  });
 }
 
 /* ============================================================
@@ -635,44 +710,90 @@ function handleVictory() {
   stopTimer();
   SFX.victory();
 
-  // Calcular estrellas
-  const accuracy = state.totalPairs / Math.max(1, state.attempts);
-  let stars = 1;
-  if (accuracy >= 0.7) stars = 3;
-  else if (accuracy >= 0.4) stars = 2;
+  if (state.isMultiplayer) {
+    // Modo multiplayer: mostrar ranking
+    const ranking = getRanking();
+    const winner = ranking[0];
 
-  // Mensaje motivacional
-  const messages = {
-    3: '¡EXCELENTE! SOS UN CRACK!',
-    2: '¡MUY BIEN! SEGUÍ ASÍ!',
-    1: '¡SEGUÍ PRACTICANDO!'
-  };
+    document.getElementById('end-score').textContent = `${winner.name} GANÓ`;
+    document.getElementById('end-time').textContent = formatTime(state.elapsedSeconds);
+    document.getElementById('end-attempts').textContent = state.attempts;
+    document.getElementById('end-errors').textContent = 'MULTIJUGADOR';
+    document.getElementById('end-message').textContent = `¡FELICITACIONES ${winner.name}!`;
 
-  // Llenar pantalla fin
-  document.getElementById('end-score').textContent = state.score;
-  document.getElementById('end-time').textContent = formatTime(state.elapsedSeconds);
-  document.getElementById('end-attempts').textContent = state.attempts;
-  document.getElementById('end-errors').textContent = state.errors;
-  document.getElementById('end-message').textContent = messages[stars];
+    // Mostrar ranking detallado
+    showMultiplayerRanking(ranking);
 
-  // Estrellas
-  const starEls = document.querySelectorAll('#end-stars .fa-star');
-  starEls.forEach((s, i) => {
-    s.classList.toggle('earned', i < stars);
-  });
+  } else {
+    // Modo single player: lógica normal
+    const accuracy = state.totalPairs / Math.max(1, state.attempts);
+    let stars = 1;
+    if (accuracy >= 0.7) stars = 3;
+    else if (accuracy >= 0.4) stars = 2;
 
-  // Guardar ranking
-  saveToRanking({
-    name: state.playerName,
-    score: state.score,
-    difficulty: state.difficulty,
-    pairs: state.totalPairs,
-    time: state.elapsedSeconds,
-    date: new Date().toLocaleDateString('es-AR')
-  });
+    const messages = {
+      3: '¡EXCELENTE! SOS UN CRACK!',
+      2: '¡MUY BIEN! SEGUÍ ASÍ!',
+      1: '¡SEGUÍ PRACTICANDO!'
+    };
+
+    document.getElementById('end-score').textContent = state.score;
+    document.getElementById('end-time').textContent = formatTime(state.elapsedSeconds);
+    document.getElementById('end-attempts').textContent = state.attempts;
+    document.getElementById('end-errors').textContent = state.errors;
+    document.getElementById('end-message').textContent = messages[stars];
+
+    // Estrellas
+    const starEls = document.querySelectorAll('#end-stars .fa-star');
+    starEls.forEach((s, i) => {
+      s.classList.toggle('earned', i < stars);
+    });
+
+    // Guardar ranking
+    saveToRanking({
+      name: state.playerName,
+      score: state.score,
+      difficulty: state.difficulty,
+      pairs: state.totalPairs,
+      time: state.elapsedSeconds,
+      date: new Date().toLocaleDateString('es-AR')
+    });
+  }
 
   showScreen('screen-end');
   startConfetti();
+}
+
+// Mostrar ranking de multiplayer
+function showMultiplayerRanking(ranking) {
+  const rankingContainer = document.getElementById('multiplayer-ranking');
+  if (!rankingContainer) return;
+
+  rankingContainer.innerHTML = '';
+
+  ranking.forEach((player, index) => {
+    const position = index + 1;
+    const medal = position === 1 ? '🥇' : position === 2 ? '🥈' : position === 3 ? '🥉' : '🏅';
+
+    const playerDiv = document.createElement('div');
+    playerDiv.className = `ranking-item ${position === 1 ? 'winner' : ''}`;
+
+    playerDiv.innerHTML = `
+      <div class="ranking-position">${medal} ${position}°</div>
+      <div class="ranking-player">
+        <div class="ranking-name">${player.name}</div>
+        <div class="ranking-stats">
+          <span>${player.score} puntos</span>
+          <span>${player.matches} parejas</span>
+          <span>${player.mistakes} errores</span>
+        </div>
+      </div>
+    `;
+
+    rankingContainer.appendChild(playerDiv);
+  });
+
+  rankingContainer.style.display = 'block';
 }
 
 /* ============================================================
@@ -816,11 +937,177 @@ function openQRModal() {
 }
 
 /* ============================================================
+   FUNCIONES MULTIPLAYER
+   ============================================================ */
+
+// Crear estructura de jugadores
+function createPlayers(playerNames) {
+  return playerNames.map((name, index) => ({
+    id: index + 1,
+    name: name.trim().toUpperCase(),
+    score: 0,
+    matches: 0,
+    mistakes: 0,
+    streak: 0,
+    turnsPlayed: 0
+  }));
+}
+
+// Obtener jugador actual
+function getCurrentPlayer() {
+  if (!state.isMultiplayer || state.players.length === 0) return null;
+  return state.players[state.currentPlayerIndex];
+}
+
+// Cambiar al siguiente turno
+function nextTurn() {
+  if (!state.isMultiplayer) return;
+
+  state.currentPlayerIndex = (state.currentPlayerIndex + 1) % state.players.length;
+  updateHUD();
+}
+
+// Agregar puntos al jugador actual
+function addScoreToCurrentPlayer(points) {
+  if (!state.isMultiplayer) {
+    state.score += points;
+    return;
+  }
+
+  const player = getCurrentPlayer();
+  if (player) {
+    player.score = Math.max(0, player.score + points); // Nunca negativo
+  }
+}
+
+// Agregar pareja encontrada al jugador actual
+function addMatchToCurrentPlayer() {
+  if (!state.isMultiplayer) {
+    state.pairsFound++;
+    return;
+  }
+
+  const player = getCurrentPlayer();
+  if (player) {
+    player.matches++;
+  }
+}
+
+// Agregar error al jugador actual
+function addMistakeToCurrentPlayer() {
+  if (!state.isMultiplayer) {
+    state.errors++;
+    return;
+  }
+
+  const player = getCurrentPlayer();
+  if (player) {
+    player.mistakes++;
+  }
+}
+
+// Actualizar racha del jugador actual
+function updateStreakForCurrentPlayer(newStreak) {
+  if (!state.isMultiplayer) {
+    state.streak = newStreak;
+    state.bestStreak = Math.max(state.bestStreak, newStreak);
+    return;
+  }
+
+  const player = getCurrentPlayer();
+  if (player) {
+    player.streak = newStreak;
+  }
+}
+
+// Incrementar turnos jugados del jugador actual
+function incrementTurnsForCurrentPlayer() {
+  if (!state.isMultiplayer) return;
+
+  const player = getCurrentPlayer();
+  if (player) {
+    player.turnsPlayed++;
+  }
+}
+
+// Iniciar juego multiplayer
+function startMultiplayerGame(useCustom) {
+  // Obtener cantidad de jugadores seleccionada
+  const activeCountBtn = document.querySelector('.count-btn.active');
+  if (!activeCountBtn) {
+    showToast('SELECCIONÁ LA CANTIDAD DE JUGADORES', 'error');
+    return;
+  }
+
+  const playerCount = parseInt(activeCountBtn.dataset.count);
+
+  // Obtener nombres de jugadores
+  const playerNames = [];
+  for (let i = 1; i <= playerCount; i++) {
+    const input = document.getElementById(`player${i}-name`);
+    const name = input.value.trim();
+    if (!name) {
+      showToast(`INGRESÁ EL NOMBRE DEL JUGADOR ${i}`, 'error');
+      input.focus();
+      return;
+    }
+    playerNames.push(name);
+  }
+
+  // Verificar nombres únicos
+  const uniqueNames = new Set(playerNames.map(n => n.toUpperCase()));
+  if (uniqueNames.size !== playerNames.length) {
+    showToast('LOS NOMBRES DEBEN SER ÚNICOS', 'error');
+    return;
+  }
+
+  // Iniciar juego
+  startGame(useCustom, true, playerNames);
+}
+
+// Obtener ranking final ordenado por score
+function getRanking() {
+  if (!state.isMultiplayer) {
+    return [{
+      id: 1,
+      name: state.playerName,
+      score: state.score,
+      matches: state.pairsFound,
+      mistakes: state.errors,
+      streak: state.bestStreak
+    }];
+  }
+
+  return [...state.players].sort((a, b) => b.score - a.score);
+}
+
+/* ============================================================
    INICIAR JUEGO
    ============================================================ */
-function startGame(useCustom) {
-  const name = document.getElementById('player-name').value.trim().toUpperCase();
-  if (!name) { showToast('INGRESÁ TU NOMBRE', 'error'); document.getElementById('player-name').focus(); return; }
+function startGame(useCustom, isMultiplayer = false, playerNames = []) {
+  let playerName = '';
+
+  if (isMultiplayer) {
+    if (playerNames.length === 0) {
+      showToast('CONFIGURÁ LOS JUGADORES PRIMERO', 'error');
+      return;
+    }
+    playerName = 'MULTIJUGADOR';
+    state.isMultiplayer = true;
+    state.players = createPlayers(playerNames);
+    state.currentPlayerIndex = 0;
+    state.gameMode = 'multiplayer';
+  } else {
+    playerName = document.getElementById('player-name').value.trim().toUpperCase();
+    if (!playerName) {
+      showToast('INGRESÁ TU NOMBRE', 'error');
+      document.getElementById('player-name').focus();
+      return;
+    }
+    state.isMultiplayer = false;
+    state.players = [];
+    state.gameMode = 'single';
+  }
 
   const diff = DIFFICULTY_MAP[state.difficulty];
   let pairs;
@@ -849,7 +1136,7 @@ function startGame(useCustom) {
   }
 
   // Reiniciar estado
-  state.playerName = name;
+  state.playerName = playerName;
   state.pairs = pairs;
   state.totalPairs = pairs.length;
   state.cards = generateCards(pairs);
@@ -875,6 +1162,40 @@ function startGame(useCustom) {
    ============================================================ */
 document.addEventListener('DOMContentLoaded', () => {
   createBackgroundShapes();
+
+  // MODO DE JUEGO (Single vs Multiplayer)
+  document.getElementById('btn-single-player').addEventListener('click', () => {
+    document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById('btn-single-player').classList.add('active');
+    document.getElementById('players-setup').style.display = 'none';
+    document.getElementById('player-name').style.display = 'block';
+    state.gameMode = 'single';
+  });
+
+  document.getElementById('btn-multiplayer').addEventListener('click', () => {
+    document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById('btn-multiplayer').classList.add('active');
+    document.getElementById('players-setup').style.display = 'block';
+    document.getElementById('player-name').style.display = 'none';
+    state.gameMode = 'multiplayer';
+  });
+
+  // CONFIGURACIÓN DE JUGADORES
+  document.querySelectorAll('.count-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.count-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const count = parseInt(btn.dataset.count);
+      // Mostrar/ocultar inputs de jugadores según la cantidad
+      for (let i = 1; i <= 4; i++) {
+        const group = document.getElementById(`player${i}-group`);
+        if (group) {
+          group.style.display = i <= count ? 'block' : 'none';
+        }
+      }
+    });
+  });
 
   // Dificultad
   document.querySelectorAll('.diff-btn').forEach(btn => {
@@ -925,8 +1246,21 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Botones de inicio
-  document.getElementById('btn-start-custom').addEventListener('click', () => startGame(true));
-  document.getElementById('btn-start-default').addEventListener('click', () => startGame(false));
+  document.getElementById('btn-start-custom').addEventListener('click', () => {
+    if (state.gameMode === 'multiplayer') {
+      startMultiplayerGame(true);
+    } else {
+      startGame(true);
+    }
+  });
+
+  document.getElementById('btn-start-default').addEventListener('click', () => {
+    if (state.gameMode === 'multiplayer') {
+      startMultiplayerGame(false);
+    } else {
+      startGame(false);
+    }
+  });
 
   // Pantalla fin
   document.getElementById('btn-play-again').addEventListener('click', () => {

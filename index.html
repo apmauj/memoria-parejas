@@ -40,6 +40,53 @@
     </div>
 
     <div class="form-group">
+      <label class="form-label">MODO DE JUEGO</label>
+      <div class="game-mode-selector">
+        <button class="mode-btn active" id="btn-single-player">
+          <i class="fas fa-user"></i>
+          <span>JUGAR SOLO</span>
+        </button>
+        <button class="mode-btn" id="btn-multiplayer">
+          <i class="fas fa-users"></i>
+          <span>JUGAR CON AMIGOS</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Configuración de jugadores (oculta por defecto) -->
+    <div class="form-group" id="players-setup" style="display: none;">
+      <label class="form-label">CONFIGURACIÓN DE JUGADORES</label>
+      <div class="players-config">
+        <div class="player-count-selector">
+          <label class="form-label-small">CANTIDAD DE JUGADORES</label>
+          <div class="player-count-buttons">
+            <button class="count-btn active" data-count="2">2</button>
+            <button class="count-btn" data-count="3">3</button>
+            <button class="count-btn" data-count="4">4</button>
+          </div>
+        </div>
+        <div class="players-names">
+          <div class="player-input-group">
+            <label class="form-label-small">JUGADOR 1</label>
+            <input class="form-input" type="text" id="player1-name" placeholder="NOMBRE" maxlength="12">
+          </div>
+          <div class="player-input-group">
+            <label class="form-label-small">JUGADOR 2</label>
+            <input class="form-input" type="text" id="player2-name" placeholder="NOMBRE" maxlength="12">
+          </div>
+          <div class="player-input-group" id="player3-group" style="display: none;">
+            <label class="form-label-small">JUGADOR 3</label>
+            <input class="form-input" type="text" id="player3-name" placeholder="NOMBRE" maxlength="12">
+          </div>
+          <div class="player-input-group" id="player4-group" style="display: none;">
+            <label class="form-label-small">JUGADOR 4</label>
+            <input class="form-input" type="text" id="player4-name" placeholder="NOMBRE" maxlength="12">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
       <label class="form-label">DIFICULTAD</label>
       <div class="difficulty-grid">
         <div class="difficulty-option">
@@ -87,6 +134,9 @@
 
 <!-- ====== PANTALLA JUEGO ====== -->
 <div id="screen-game" class="screen">
+  <!-- Panel de jugadores (solo en multiplayer) -->
+  <div id="players-panel" class="players-panel" style="display: none;"></div>
+
   <div id="hud">
     <div class="hud-item"><i class="fas fa-user" style="color:var(--accent)"></i> <span class="hud-val" id="hud-name">—</span></div>
     <div class="hud-item"><i class="fas fa-star" style="color:var(--gold)"></i> <span class="hud-val" id="hud-score">0</span></div>
@@ -118,6 +168,10 @@
       <div class="end-stat"><div class="end-stat-val" id="end-errors">0</div><div class="end-stat-label">ERRORES</div></div>
     </div>
     <div class="end-message" id="end-message">¡SEGUÍ PRACTICANDO!</div>
+
+    <!-- Ranking Multiplayer (oculto por defecto) -->
+    <div class="multiplayer-ranking" id="multiplayer-ranking" style="display: none;"></div>
+
     <div class="btn-group">
       <button class="btn-primary" id="btn-play-again"><i class="fas fa-redo"></i>&nbsp; JUGAR DE NUEVO</button>
       <button class="btn-secondary btn-small" id="btn-go-home"><i class="fas fa-house"></i>&nbsp; INICIO</button>
