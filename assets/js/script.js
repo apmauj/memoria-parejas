@@ -58,6 +58,12 @@ let state = {
 // Imágenes cargadas por el usuario
 let uploadedImages = []; // { name, imageUrl }
 
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, char => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  })[char]);
+}
+
 /* ============================================================
    MANEJADOR DE SONIDOS (WEB AUDIO API)
    ============================================================ */
@@ -317,8 +323,8 @@ function renderPreviews() {
     const div = document.createElement('div');
     div.className = 'preview-item';
     div.innerHTML = `
-      <img src="${img.imageUrl}" alt="${img.name}">
-      <div class="preview-name">${img.name}</div>
+      <img src="${escapeHtml(img.imageUrl)}" alt="${escapeHtml(img.name)}">
+      <div class="preview-name">${escapeHtml(img.name)}</div>
       <button class="remove-btn" data-index="${i}" aria-label="Quitar"><i class="fas fa-xmark"></i></button>
     `;
     grid.appendChild(div);
@@ -422,11 +428,11 @@ function renderBoard() {
 
     let frontContent = '';
     if (card.type === 'image') {
-      frontContent = `<img src="${card.imageUrl}" alt="${card.value}" draggable="false">`;
+      frontContent = `<img src="${escapeHtml(card.imageUrl)}" alt="${escapeHtml(card.value)}" draggable="false">`;
     } else {
       // Mejorar el manejo de texto largo
       const displayText = formatCardText(card.value, card.syllables);
-      frontContent = `<span class="card-text">${displayText}</span>`;
+      frontContent = `<span class="card-text">${escapeHtml(displayText)}</span>`;
     }
 
     div.innerHTML = `
@@ -692,10 +698,10 @@ function updatePlayersPanel() {
     playerDiv.className = `player-info ${index === state.currentPlayerIndex ? 'current' : ''}`;
 
     playerDiv.innerHTML = `
-      <div class="player-name">${player.name}</div>
+      <div class="player-name">${escapeHtml(player.name)}</div>
       <div class="player-stats">
-        <span class="player-score">${player.score}pts</span>
-        <span class="player-matches">${player.matches}🃏</span>
+        <span class="player-score">${escapeHtml(player.score)}pts</span>
+        <span class="player-matches">${escapeHtml(player.matches)}🃏</span>
       </div>
     `;
 
@@ -781,11 +787,11 @@ function showMultiplayerRanking(ranking) {
     playerDiv.innerHTML = `
       <div class="ranking-position">${medal} ${position}°</div>
       <div class="ranking-player">
-        <div class="ranking-name">${player.name}</div>
+        <div class="ranking-name">${escapeHtml(player.name)}</div>
         <div class="ranking-stats">
-          <span>${player.score} puntos</span>
-          <span>${player.matches} parejas</span>
-          <span>${player.mistakes} errores</span>
+          <span>${escapeHtml(player.score)} puntos</span>
+          <span>${escapeHtml(player.matches)} parejas</span>
+          <span>${escapeHtml(player.mistakes)} errores</span>
         </div>
       </div>
     `;
@@ -883,9 +889,9 @@ function renderRanking() {
   list.innerHTML = ranking.map((r, i) => `
     <li class="ranking-item">
       <div class="ranking-pos">${i + 1}</div>
-      <div class="ranking-name">${r.name}</div>
-      <div class="ranking-score">${r.score}</div>
-      <div class="ranking-date">${r.date || ''}</div>
+      <div class="ranking-name">${escapeHtml(r.name)}</div>
+      <div class="ranking-score">${escapeHtml(r.score)}</div>
+      <div class="ranking-date">${escapeHtml(r.date || '')}</div>
     </li>
   `).join('');
 }
